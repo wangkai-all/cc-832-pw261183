@@ -1,0 +1,12 @@
+{
+  "id": "log-domain-conflict",
+  "title": "域冲突：log 参数包含非正值",
+  "expectError": "DOMAIN_LOG",
+  "config": {
+    "sources": [],
+    "inputs": [
+      { "name": "x", "label": "含非正区间", "lo": -0.2, "hi": 1 }
+    ],
+    "expression": "log(x)"
+  }
+}

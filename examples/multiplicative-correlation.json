@@ -1,0 +1,34 @@
+{
+  "id": "multiplicative-correlation",
+  "title": "可解析乘除相关式：a*b/a 与 x/x",
+  "cases": [
+    {
+      "name": "factor-cancel",
+      "config": {
+        "sources": [{ "id": "r", "name": "正读数", "lo": 1, "hi": 2 }],
+        "inputs": [
+          { "name": "a", "label": "a=r", "formula": "r" },
+          { "name": "b", "label": "b=3r", "formula": "3*r" }
+        ],
+        "expression": "a*b/a"
+      },
+      "expect": {
+        "normalized": "b",
+        "correlated": [3, 6],
+        "ordinaryContains": [1.5, 12]
+      }
+    },
+    {
+      "name": "self-division",
+      "config": {
+        "sources": [],
+        "inputs": [{ "name": "x", "label": "正数读数", "lo": 1, "hi": 2 }],
+        "expression": "x/x"
+      },
+      "expect": {
+        "normalized": "1",
+        "correlated": [1, 1]
+      }
+    }
+  ]
+}

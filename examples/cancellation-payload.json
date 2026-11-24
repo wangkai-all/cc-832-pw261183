@@ -1,0 +1,9 @@
+{
+  "sources": [],
+  "inputs": [
+    { "name": "x", "label": "同一读数", "lo": 0.95, "hi": 1.05 }
+  ],
+  "expression": "x - x",
+  "budget": 16,
+  "budgetLocked": true
+}

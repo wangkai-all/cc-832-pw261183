@@ -1,0 +1,32 @@
+{
+  "id": "cancellation",
+  "title": "可解析消去式：x - x 与共同来源 y - 2*x",
+  "cases": [
+    {
+      "name": "same-symbol",
+      "config": {
+        "sources": [],
+        "inputs": [{ "name": "x", "label": "同一读数", "lo": 0.95, "hi": 1.05 }],
+        "expression": "x - x"
+      },
+      "expect": {
+        "ordinary": [-0.1, 0.1],
+        "correlated": [0, 0]
+      }
+    },
+    {
+      "name": "common-source",
+      "config": {
+        "sources": [{ "id": "r", "name": "共同原始读数", "lo": 0.95, "hi": 1.05 }],
+        "inputs": [
+          { "name": "x", "label": "X", "formula": "r" },
+          { "name": "y", "label": "Y", "formula": "2*r" }
+        ],
+        "expression": "y - 2*x"
+      },
+      "expect": {
+        "correlated": [0, 0]
+      }
+    }
+  ]
+}

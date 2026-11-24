@@ -1,0 +1,13 @@
+{
+  "id": "formula-cycle",
+  "title": "表达式循环：a ↔ b",
+  "expectError": "CYCLE",
+  "config": {
+    "sources": [],
+    "inputs": [
+      { "name": "a", "label": "a", "formula": "b + 1" },
+      { "name": "b", "label": "b", "formula": "a * 2" }
+    ],
+    "expression": "a"
+  }
+}

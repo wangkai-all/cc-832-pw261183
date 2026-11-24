@@ -1,0 +1,17 @@
+{
+  "name": "credible-range-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dependency-aware credible interval and bound analysis workbench",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js",
+    "verify:examples": "node scripts/check-examples.mjs",
+    "check": "node scripts/check-syntax.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

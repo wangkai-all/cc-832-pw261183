@@ -1,0 +1,36 @@
+{
+  "id": "domain-conflicts",
+  "title": "计算前必须阻断的除数跨零、log 非法域和循环",
+  "cases": [
+    {
+      "name": "divisor-crosses-zero",
+      "config": {
+        "sources": [],
+        "inputs": [{ "name": "x", "label": "跨零输入", "lo": 0, "hi": 2 }],
+        "expression": "1/(x - 1)"
+      },
+      "expectError": "DOMAIN_DIV_ZERO"
+    },
+    {
+      "name": "log-non-positive",
+      "config": {
+        "sources": [],
+        "inputs": [{ "name": "x", "label": "含非正区间", "lo": -0.2, "hi": 1 }],
+        "expression": "log(x)"
+      },
+      "expectError": "DOMAIN_LOG"
+    },
+    {
+      "name": "cycle",
+      "config": {
+        "sources": [],
+        "inputs": [
+          { "name": "a", "label": "a", "formula": "b + 1" },
+          { "name": "b", "label": "b", "formula": "a * 2" }
+        ],
+        "expression": "a"
+      },
+      "expectError": "CYCLE"
+    }
+  ]
+}

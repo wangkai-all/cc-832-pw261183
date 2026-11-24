@@ -1,0 +1,12 @@
+{
+  "id": "divisor-crosses-zero",
+  "title": "域冲突：除数跨零",
+  "expectError": "DOMAIN_DIV_ZERO",
+  "config": {
+    "sources": [],
+    "inputs": [
+      { "name": "x", "label": "跨零读数", "lo": 0, "hi": 2 }
+    ],
+    "expression": "1/(x - 1)"
+  }
+}

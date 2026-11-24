@@ -1,0 +1,18 @@
+{
+  "id": "multiplication-division-correlation",
+  "title": "可解析乘除相关式：a*b/a",
+  "expect": {
+    "normalizedExpression": "b",
+    "correlated": [3, 6]
+  },
+  "config": {
+    "sources": [
+      { "id": "r", "name": "正原始读数", "lo": 1, "hi": 2 }
+    ],
+    "inputs": [
+      { "name": "a", "label": "a = r", "formula": "r" },
+      { "name": "b", "label": "b = 3r", "formula": "3*r" }
+    ],
+    "expression": "a*b/a"
+  }
+}

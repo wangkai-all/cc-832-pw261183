@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>指标可信范围分析工具</title>
+    <meta name="description" content="考虑共同来源与重复误差符号的严格区间、依赖图、自适应细分和明细导出工具" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">∑</div>
+          <div>
+            <h1>指标可信范围分析台</h1>
+            <p>共同来源依赖 · 保守包络 · 自适应细分 · 可追溯求界任务</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="cert-badge" title="所有显示的严格界均来自区间/仿射包络，而非采样最大值">
+            <span class="dot dot-good"></span>严格界优先
+          </span>
+          <button id="themeToggle" class="btn btn-ghost" type="button">切换深色</button>
+        </div>
+      </header>
+
+      <section class="sample-bar" aria-label="核对样例">
+        <label for="sampleSelect">核对样例</label>
+        <select id="sampleSelect"></select>
+        <div id="sampleButtons" class="sample-buttons"></div>
+      </section>
+
+      <main class="layout">
+        <section class="panel config-panel" aria-label="模型配置">
+          <div class="panel-head">
+            <h2>1. 固定原始表达式与输入版本</h2>
+            <button id="saveDraftBtn" class="btn btn-secondary btn-sm" type="button">保存为新版本</button>
+          </div>
+
+          <div class="config-section">
+            <div class="section-title-row">
+              <h3>共同原始来源</h3>
+              <button id="addSourceBtn" class="btn btn-ghost btn-sm" type="button">+ 来源</button>
+            </div>
+            <p class="hint">改变一个共同来源的区间，所有引用它的字段会在相关计算中保持联动。</p>
+            <div class="table-wrap">
+              <table class="editor-table" id="sourceTable">
+                <thead><tr><th>符号</th><th>名称</th><th>下界</th><th>上界</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="config-section">
+            <div class="section-title-row">
+              <h3>输入指标 / 字段</h3>
+              <button id="addInputBtn" class="btn btn-ghost btn-sm" type="button">+ 指标</button>
+            </div>
+            <p class="hint">填写“来源式”则从共同来源导出；留空公式时使用该行独立误差区间。公式可引用来源或其他指标。</p>
+            <div id="inputEditorList" class="input-list"></div>
+          </div>
+
+          <div class="config-section">
+            <h3>目标表达式</h3>
+            <textarea id="expressionInput" class="expression-input" rows="3" spellcheck="false"></textarea>
+            <div class="operator-pad" aria-label="表达式运算符">
+              <button data-insert=" + " type="button">+</button>
+              <button data-insert=" - " type="button">−</button>
+              <button data-insert=" * " type="button">×</button>
+              <button data-insert=" / " type="button">÷</button>
+              <button data-insert="()" type="button">（）</button>
+              <button data-insert="log(" type="button">log</button>
+              <button data-insert="exp(" type="button">exp</button>
+              <button data-insert="sqrt(" type="button">sqrt</button>
+              <button data-insert="abs(" type="button">abs</button>
+              <button data-insert="^2" type="button">x²</button>
+            </div>
+          </div>
+
+          <div class="run-bar">
+            <label class="budget-control">
+              <span>锁定细分叶盒预算</span>
+              <input id="budgetInput" type="number" min="1" max="512" step="1" value="64" />
+            </label>
+            <label class="lock-control">
+              <input id="budgetLock" type="checkbox" checked />
+              <span>预算与配置一起冻结到任务</span>
+            </label>
+            <button id="runBtn" class="btn btn-primary" type="button">锁定配置并对比两种求界</button>
+          </div>
+          <div id="configAlert" class="alert" role="alert" hidden></div>
+        </section>
+
+        <section class="results-column">
+          <div class="panel result-hero">
+            <div class="panel-head">
+              <h2>2. 求界任务与对比</h2>
+              <div id="jobMeta" class="job-meta">尚未创建任务</div>
+            </div>
+            <div id="emptyState" class="empty-state">
+              <div class="empty-icon">⌁</div>
+              <h3>从一个可解析样例开始核对</h3>
+              <p>选择上方“同一读数 x−x”或“乘除相关 a*b/a”，然后运行对比。严格界、证明间隙和导出明细会显示在这里。</p>
+            </div>
+            <div id="resultContent" hidden>
+              <div id="blockedBanner" class="blocked-banner" hidden></div>
+              <div class="bound-cards">
+                <article class="bound-card ordinary">
+                  <div class="card-kicker"><span class="swatch swatch-ordinary"></span>普通区间</div>
+                  <div class="bound-value" id="ordinaryBound">—</div>
+                  <div class="bound-width" id="ordinaryWidth">—</div>
+                  <p class="card-note">每个字段按独立区间求值；重复出现的同一误差也被当作独立来源。</p>
+                </article>
+                <article class="bound-card correlated">
+                  <div class="card-kicker"><span class="swatch swatch-correlated"></span>保留相关依赖</div>
+                  <div class="bound-value" id="correlatedBound">—</div>
+                  <div class="bound-width" id="correlatedWidth">—</div>
+                  <p class="card-note">统一投影到共同来源盒，仿射项保留依赖，非线性残差保守包络并自适应细分。</p>
+                </article>
+                <article class="bound-card savings">
+                  <div class="card-kicker"><span class="swatch swatch-good"></span>依赖信息收益</div>
+                  <div class="bound-value" id="savingsValue">—</div>
+                  <div class="bound-width" id="savingsSub">—</div>
+                  <p class="card-note" id="exactNote">—</p>
+                </article>
+              </div>
+
+              <div class="chart-panel">
+                <div class="chart-heading">
+                  <h3>同一数值轴上的外包络与可行采样</h3>
+                  <div class="legend">
+                    <span><i class="legend-swatch ordinary"></i>普通严格区间</span>
+                    <span><i class="legend-swatch correlated"></i>相关严格区间</span>
+                    <span><i class="legend-tick observed"></i>已知可行采样区间（非严格界）</span>
+                  </div>
+                </div>
+                <div id="boundChart" class="bound-chart"></div>
+                <div id="chartTooltip" class="chart-tooltip" hidden></div>
+              </div>
+
+              <div id="proofCards" class="proof-grid"></div>
+            </div>
+          </div>
+
+          <div class="panel details-panel" id="detailsPanel" hidden>
+            <nav class="tabs" role="tablist">
+              <button class="tab active" data-tab="graph" role="tab">完整依赖图</button>
+              <button class="tab" data-tab="ledger" role="tab">运算扩界明细</button>
+              <button class="tab" data-tab="boxes" role="tab">细分盒任务</button>
+              <button class="tab" data-tab="json" role="tab">任务 JSON</button>
+            </nav>
+
+            <div class="tab-actions">
+              <button class="btn btn-secondary btn-sm" data-export="json" type="button">导出全量 JSON</button>
+              <button class="btn btn-secondary btn-sm" data-export="ledger.csv" type="button">导出运算 CSV</button>
+              <button class="btn btn-secondary btn-sm" data-export="boxes.csv" type="button">导出细分盒 CSV</button>
+              <button class="btn btn-secondary btn-sm" data-export="md" type="button">导出证明报告 MD</button>
+            </div>
+
+            <div class="tab-body">
+              <section data-panel="graph" class="tab-panel active">
+                <div id="graphWrap" class="graph-wrap"></div>
+              </section>
+              <section data-panel="ledger" class="tab-panel">
+                <div class="table-wrap ledger-wrap">
+                  <table id="ledgerTable"><thead></thead><tbody></tbody></table>
+                </div>
+              </section>
+              <section data-panel="boxes" class="tab-panel">
+                <div id="boxesSummary" class="boxes-summary"></div>
+                <div class="table-wrap">
+                  <table id="boxesTable"><thead></thead><tbody></tbody></table>
+                </div>
+              </section>
+              <section data-panel="json" class="tab-panel">
+                <pre id="jsonView" class="json-view"></pre>
+              </section>
+            </div>
+          </div>
+
+          <div class="panel history-panel">
+            <div class="panel-head">
+              <h2>3. 求界任务与版本不可变性</h2>
+              <button id="refreshJobsBtn" class="btn btn-ghost btn-sm" type="button">刷新任务</button>
+            </div>
+            <p class="hint">每个任务冻结当时的表达式版本、输入版本和细分预算。之后修改页面草稿或保存新版本，不会覆盖旧任务及其后台结果。</p>
+            <div class="table-wrap">
+              <table id="jobsTable">
+                <thead><tr><th>任务</th><th>状态</th><th>表达式</th><th>普通界</th><th>相关界</th><th>收紧</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
